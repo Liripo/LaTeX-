@@ -1,0 +1,274 @@
+\documentclass[UTF8,a4paper,12pt]{ctexart} % 指定文档类型,常用文档类: article, book, beamer, ctexart, ctexbook, ctexbeamer
+%%%%%%%%%%%%%%%%%%% 导言区: 导言区: \documentclass 和\begin{document} 之间的区域,用于放置全局控制命令,全局设置, 宏包调用等
+
+%中文使用的宏包
+\usepackage{ctex}
+%添加代码
+\usepackage[most, minted]{tcolorbox}
+\newtcblisting{lang}[2][]{%
+	listing engine=minted,
+	minted language=#2,
+	listing only,
+	breakable,
+	enhanced,
+	minted options = {
+		linenos, 
+		breaklines=true, 
+		breakanywhere, 
+		numbersep=2mm,
+		encoding=utf8,
+		tabsize=2,
+	},
+	overlay={%
+		\begin{tcbclipinterior}
+			\fill[gray!25] (frame.south west) rectangle ([xshift=4mm]frame.north west);
+		\end{tcbclipinterior}
+	},
+	#1   
+}
+%左代码右输出
+\usepackage[final]{showexpl}
+\lstloadlanguages{[LaTeX]Tex} 
+\lstset{
+	breaklines=true, 
+	backgroundcolor=\color{mBackground},
+	  basicstyle=\ttfamily\small,
+	commentstyle=\itshape\ttfamily\small,
+	showspaces=false,
+	showstringspaces=false,
+	breakautoindent=true,
+	captionpos=t,
+%	keywordstyle=\color{blue}\sffamily\bfseries,
+%	identifierstyle=\color{black},
+%	commentstyle=\color{OliveGreen}
+}
+\iftrue
+\lstset{explpreset={numbers=left,numberstyle=\tiny,numbersep=.3em,
+		xleftmargin=1em,columns=flexible,language={}},pos=r}
+\fi
+\AtBeginDocument{%
+	\renewcommand*\lstlistlistingname{Examples}
+	\renewcommand*\lstlistingname{Example}
+}
+\renewcommand\FancyVerbSpace{\textcolor{white}{\char32}}
+%copy不复制行号
+\usepackage{accsupp}
+\newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
+\let\theHFancyVerbLine\theFancyVerbLine
+\def\theFancyVerbLine{\rmfamily\tiny\emptyaccsupp{\arabic{FancyVerbLine}}}
+%设置字体
+%\usepackage{fontspec}
+%\setromanfont{Times New Roman}
+%LaTeX首行缩进宏包
+\usepackage{indentfirst}
+% 代码颜色[参考网址](https://blog.csdn.net/Sarah_LZ/article/details/86634642)
+\usepackage{xcolor}
+\definecolor{mBackground}{RGB}{245,245,245}   % lightgrey
+\definecolor{mNumber}{RGB}{128,128,128}       % gray
+\definecolor{mNumberbg}{RGB}{237,240,241}     % lightgrey
+%插入超链接
+\usepackage{hyperref}
+\hypersetup{%CJKbookmarks=true, % 支持中文书签
+  colorlinks=true, % 使用彩色链接
+  citecolor=blue, % 引用标记颜色
+  linkcolor=blue, % 内部普通链接的颜色
+  urlcolor=blue, % url 链接的颜色
+  breaklinks=true } % 允许在链接处换
+\makeatletter
+\def\UrlAlphabet{%
+	\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j%
+	\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t%
+	\do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D%
+	\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N%
+	\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X%
+	\do\Y\do\Z}
+\def\UrlDigits{\do\1\do\2\do\3\do\4\do\5\do\6\do\7\do\8\do\9\do\0}
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\g@addto@macro{\UrlBreaks}{\UrlAlphabet}
+\g@addto@macro{\UrlBreaks}{\UrlDigits}
+\makeatother
+%插入图片
+\usepackage{graphicx}
+%fontawesome
+\usepackage{fontawesome5}
+\def\facog{\small\faIcon{cog}}
+\def\fabookmark{\small\faIcon{bookmark}}
+%新命令
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\title{\LaTeX 学习}
+\author{Liripo}
+\date{2021-03-10}
+\maketitle %显示标题，不可省略
+\tableofcontents
+\section*{前言}
+\LaTeX 特点:
+\begin{itemize}
+  \item 高质量排版
+  \item 自动编号，比如目录等
+  \item 可以使用各种宏包进行扩展
+  \item ...
+\end{itemize}
+\section{\protect\facog 基本配置}
+\subsection{下载Tex发行版} 
+Tex的发行版我选择使用TinyTex--\href{https://yihui.org/tinytex/cn/aaaaaaaaaaaaaa}{一个瘦身版的Texlive},它可以使用R安装：
+\begin{lang}{R}
+install.packages("tinytex")
+library(tinytex)
+install_tinytex()
+\end{lang}
+当然，可以在dockerhub找一些包含全部宏包的官方镜像。
+\indent 下载之后里面就包含了pdflatex,xelatex,latexmk等应用程序，但Tinytex是轻量化的，缺少很多宏包,都需要使用tlmgr管理下载。由于CTAN下载很慢，需要配置镜像。可以使用tlmgr在命令行配置，也可以使用封装的R函数配置:
+\begin{lang}{R}
+tlmgr(c("option","repository",
+  "https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet"))
+\end{lang}
+\subsection{编译}
+直接使用R函数tinytex::latexmk编译的话会自动安装缺失的包，当然最大的好处我觉得是error报错的时候会在停止编译错误后面的内容。
+可以选择命令行使用latexmk编译tex文件(遇到错误也会将后面的内容编译出来)，latexmk相较于使用xelatex优点是:
+\begin{itemize}
+	\item 一条命令自动搞定交叉引用、参考文献，避免多次编译
+ 	\item 支持增量编译，也就是说 latexmk 只编译新增的文件内容，从而显著提升编译速度
+\end{itemize}
+在命令行使用:
+\begin{lang}{bash}
+latexmk -pdf -c -xelatex test.tex
+#-pdf：最终输出的产物是 pdf，一般都要加上
+#-pv：编译完成后打开阅读器进行预览，可以酌情加或者不加
+#-xelatex：指定编译的引擎
+#-c 可以清理当前工作目录中编译生成的中间文件，这个命令不会清理 .pdf（最终产物）和 .synctex.gz（用于正反搜索）
+#-C 彻底清理
+\end{lang}
+\section{\protect\fabookmark 使用}
+\LaTeX 中命令有两种：
+一种以反斜线\verb|\| 开头，例如\verb|\LaTeX|会打出\LaTeX。
+另一种是:
+\begin{lang}{LaTeX}
+\command[option]{arguments}
+\end{lang}
+其中，方括号中的是可选的 (称为选项), 花括号中的参数是必需的。
+
+\subsection{源文件的基本框架}
+\begin{lang}{LaTeX}
+\documentclass{ctexart} % 指定文档类型,article,ctexart,book等
+% 导言区: 全局设置, 宏包调用等
+\begin{document}
+% 正文部分
+Hello world!
+\end{document} % 结束
+\end{lang}
+\subsection{功能的扩展}
+宏包调用方法 (只能出现在导言区)
+\begin{lang}{LaTeX}
+\usepackage[选项]{宏包名}
+\end{lang}
+当然,\verb|\usepackage| 可以一次性调用多个宏包，在 ⟨package-name⟩ 中用逗号隔开。这种用法一般不要指定选项。
+每个宏包的帮助文档可在\url{https://texdoc.org/index.html}查看，或者使用 texdoc 程序查看。
+\subsection{LaTex用到的文件一览}
+\begin{lang}{R}
+.sty 宏包文件。宏包的名称与文件名一致。
+.cls 文档类文件。文档类名称与文件名一致。
+.bib BIBTEX 参考文献数据库文件。
+.bst BIBTEX 用到的参考文献格式模板。LATEX 在编译过程中除了生成 .dvi 或 .pdf 格式的文档外，还可能会生成相当多的辅助文件和日志。一些功能如交叉引用、参考文献、目录、索引等，需要先通过编译生成辅助文件，然后再次编译时读入辅助文件得到正确的结果，所以复杂的 LATEX 源代码可能要编译多次(可以使用latexmk进行一次编译)
+.log 排版引擎生成的日志文件，供排查错误使用。
+.aux LATEX 生成的主辅助文件，记录交叉引用、目录、参考文献的引用等。
+.toc LATEX 生成的目录记录文件。
+.lof LATEX 生成的图片目录记录文件。
+.lot LATEX 生成的表格目录记录文件。
+.bbl BIBTEX 生成的参考文献记录文件。
+.blg BIBTEX 生成的日志文件。
+.idx LATEX 生成的供 makeindex 处理的索引记录文件。
+.ind makeindex 处理 .idx 生成的用于排版的格式化索引文件。
+.ilg makeindex 生成的日志文件。
+.out hyperref 宏包生成的 PDF 书签记录文件。
+\end{lang}
+\subsection{排版基础}
+\begin{LTXexample}
+\LaTeX{}源代码中，空格键和 Tab 键输入的空白字符视为“空格”。连续的若干个空白字符视
+为一个空格。一行开头的空格忽略不计。
+
+
+行末的换行符视为一个空格；但连续两个换行符，也就是空行，会将文字分段。多个空行被
+视为一个空行。\\
+而使用\verb|\\|可以强制换行，然后段落缩进则使用宏包identfirst处理。更好地应该是使用\verb|\par|生成新段落。
+\end{LTXexample}
+断行：\par 
+在西文排版中，断行的位置优先选取在两个单词之间，也就是在源代码中输入的“空
+格”。\par 但是这样一些很长的字符串没有空格，未必能自动断词，这时就必须在单词里手动使用\verb|\-|命令指定断词的位置。/home/liripo/test/aaa/NGS\_fq\_to\_bam ,这种情况就会右边文本溢出了。\par
+具体的处理就是在to前面加个\verb|\-|了。但是这样当你在这个段落增加了一个文字，就又得改了。一个可行的方法就是在这个长西文中加大量的\verb|\-|。
+\subsubsection{基本的排版命令}
+\begin{lang}{LaTeX}
+\chapter{⟨title⟩} 
+\section{⟨title⟩} 
+\subsection{⟨title⟩}
+\subsubsection{⟨title⟩} 
+\paragraph{⟨title⟩} 
+\subparagraph{⟨title⟩}
+\part{<title>}
+\tableofcontents %生成目录,可使用tocbibind，titletoc、tocloft等宏包定制目录
+\maketitle %生成标题
+%对齐环境
+\begin{center} … \end{center} 
+\begin{flushleft} … \end{flushleft}
+\begin{flushright} … \end{flushright}
+%列表环境
+\begin{enumerate}
+	\item …
+\end{enumerate}
+\end{lang}
+\subsection{表格}
+表格环境: tabular \par
+\begin{lang}{LaTeX}
+\begin{tabular}[竖向位置]{列格式}
+	first line \\
+	.
+	.
+	.
+	last line \\
+\end{tabular}
+\end{lang}
+\begin{itemize}
+	\item 竖向位置: 表格在竖直方向与外部文本行的相对位置,取值有 t 或 b, 分别表示上对齐和下对齐，缺省为居中对齐
+	\item 列格式: 用于指定各列的格式, 常用的参数有: l, c, r, |,||, ...
+	\item 行与行之间用\verb|\\| 分隔, 每一行的列与列之间用 \verb|&|分隔
+	\item 行与行之间的分界线:
+	\verb|\hline|: 与表格同宽的水平线  \\ 
+	\verb|\cline|{m-n}: 从第m 列开始到第n 列结束的水平线
+	\item 高级表格: longtable, diagbox, colortbl, booktabs 等宏包
+\end{itemize}
+当然，更便捷的可以使用R包\href{https://github.com/haozhu233/kableExtra}{kableExtra}生成\LaTeX{}表格。
+\subsection{插图}
+\begin{lang}{LaTeX}
+\usepackage{graphicx}
+\includegraphics[选项]{图形文件名}
+%例如
+\includegraphics[width=0.3\textwidth]{tiger.png}
+\end{lang}
+浮动图表
+\begin{lang}{LaTeX}
+\begin{figure}[位置]
+	\centering %居中，
+	\includegraphics[选项]{图形文件名}
+	\caption{注释}
+	\label{标签} %用于交叉引用
+\end{figure}
+\end{lang}
+\begin{itemize}
+	\item 浮动图表: 自动调整图表位置, 避免出现大片的空白
+	\item 位置选项的取值: h → here, t → top, b → bottom, p → page
+	\item 优先顺序: h → t → b → p
+	\item 缺省值为 tbp
+	\item 固定在当前位置（即是固定在源码位置）: H → 需加载 float 宏包。
+	\item 高级功能: float, caption, subfigure 宏包。
+\end{itemize}
+\subsection{数学公式}
+这应该才是\LaTeX{}最常使用的部分，但目前暂时没怎么接触。简单的例子
+\begin{LTXexample}
+%因为markdown也使用$$添加公式，所以比较习惯用这个。
+$$
+E=mc^2
+$$
+\end{LTXexample}
+\subsection{宏编程}
+\LaTeX 难点，目前还不是很了解。
+\end{document}
